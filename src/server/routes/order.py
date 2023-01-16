@@ -36,7 +36,7 @@ async def create(
     client = get_exchange_client(x_connection_id)
 
     try:
-        response = client.create_order(
+        return client.create_order(
             symbol=request.symbol,
             type=request.type,
             side=request.side,
@@ -47,13 +47,6 @@ async def create(
 
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
-
-    order_data = {**response, "symbol": request.symbol, "orderId": response["id"]}
-    del order_data["id"]
-
-    order = ExchangeOrder(connection=x_connection_id, **order_data)
-
-    return await ExchangeOrder.create(order)
 
 
 @router.post("/cancel/")
