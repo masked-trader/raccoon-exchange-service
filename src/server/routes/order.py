@@ -49,6 +49,48 @@ async def create(
         raise HTTPException(status_code=400, detail=str(e))
 
 
+@router.post("/{symbol}/sync/")
+async def sync_orders(symbol: str, x_connection_id: str = Header()):
+    client = get_exchange_client(x_connection_id)
+
+    for item in client.fetch_orders(symbol):  # type: ignore
+        order_data = {
+            **item,
+            "connection": x_connection_id,
+            "orderId": item["id"],
+            "symbol": symbol,
+        }
+
+        del order_data["id"]
+
+        order = await ExchangeOrder.find_one(
+            {
+                "connection": x_connection_id,
+                "orderId": order_data["orderId"],
+                "symbol": symbol,
+            }
+        )
+
+        if not order:
+            order_item = ExchangeOrder(**order_data)
+            await order_item.create()
+
+        else:
+            order.timestamp = order_data["timestamp"]
+            order.datetime = order_data["datetime"]
+            order.lastTradeTimestamp = order_data["lastTradeTimestamp"]
+            order.average = order_data["average"]
+            order.filled = order_data["filled"]
+            order.remaining = order_data["remaining"]
+            order.status = order_data["status"]
+            order.fee = order_data["fee"]
+            order.fees = order_data["fees"]
+            order.trades = order_data["trades"]
+            order.info = order_data["info"]
+
+            await order.save()
+
+
 @router.post("/cancel/")
 async def cancel(request: ExchangeOrderCancelRequest, x_connection_id: str = Header()):
     client = get_exchange_client(x_connection_id)
