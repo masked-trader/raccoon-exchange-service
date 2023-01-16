@@ -13,7 +13,11 @@ async def update(
     request: ExchangeOrder, x_connection_id=Header()
 ) -> Optional[ExchangeOrder]:
     order = await ExchangeOrder.find_one(
-        {"orderId": request.id, "symbol": request.symbol, "connection": x_connection_id}
+        {
+            "orderId": request.orderId,
+            "symbol": request.symbol,
+            "connection": x_connection_id,
+        }
     )
 
     if not order:
