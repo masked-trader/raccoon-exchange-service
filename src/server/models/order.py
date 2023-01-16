@@ -41,7 +41,7 @@ class ExchangeOrder(Document):
     side: str
     timestamp: int
     datetime: str
-    lastTradeTimestamp: int
+    lastTradeTimestamp: Optional[int]
     amount: float
     price: float
     stopPrice: Optional[float]
