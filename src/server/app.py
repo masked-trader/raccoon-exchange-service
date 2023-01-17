@@ -2,6 +2,7 @@ from fastapi import Depends, FastAPI, Header
 from fastapi.exceptions import HTTPException
 
 from server.database import init_db
+from server.routes.balance import router as balance_router
 from server.routes.internal import router as internal_router
 from server.routes.order import router as order_router
 
@@ -12,6 +13,10 @@ async def verify_connection_id(x_connection_id=Header()):
 
 
 app = FastAPI(dependencies=[Depends(verify_connection_id)])
+
+app.include_router(
+    balance_router, tags=["exchange", "balance"], prefix="/api/v1/exchange/balance"
+)
 
 app.include_router(
     order_router,

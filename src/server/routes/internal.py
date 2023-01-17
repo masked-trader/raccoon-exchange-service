@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Header
 
+from server.models.balance import ExchangeBalance
 from server.models.order import ExchangeOrder
 
 router = APIRouter()
@@ -33,3 +34,24 @@ async def sync_order_data(
     order.info = request.info
 
     return await order.save()
+
+
+@router.post("/balance/")
+async def sync_balance_data(
+    request: ExchangeBalance, x_connection_id=Header()
+) -> ExchangeBalance:
+    balance = await ExchangeBalance.find_one(
+        {
+            "asset": request.asset,
+            "connection": x_connection_id,
+        }
+    )
+
+    if not balance:
+        return await request.create()
+
+    balance.used = request.used
+    balance.free = request.free
+    balance.total = request.total
+
+    return await balance.save()
