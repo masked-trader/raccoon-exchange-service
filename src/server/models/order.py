@@ -19,7 +19,7 @@ class ExchangeOrderRequest(BaseModel):
     symbol: str
     type: OrderType
     side: OrderSide
-    amount: str
+    amount: float
     price: Optional[float]
     params: Optional[dict]
 
