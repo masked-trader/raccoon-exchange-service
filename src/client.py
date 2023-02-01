@@ -1,22 +1,31 @@
 import functools
-import json
 
 import ccxt
-from pymongo import MongoClient
 
-from constants import MONGO_CONNECTION_URL
+from internal import internal_retrieve_connection_config
 
 
 @functools.cache
-def get_ccxt_client(exchange: str, config: str, sandbox: bool = False) -> ccxt.Exchange:
+def get_ccxt_client(connection_id: str) -> ccxt.Exchange:
+    config = internal_retrieve_connection_config(connection_id)
+
+    sandbox = config["sandbox"]
+    exchange = config["exchange"]
+
     websocket_cls = getattr(ccxt, exchange)
 
-    client: ccxt.Exchange = websocket_cls(json.loads(config))
+    client_config = {}
+
+    if api_key := config.get("apiKey"):
+        client_config.update({"apiKey": api_key})
+
+    if secret := config.get("secret"):
+        client_config.update({"secret": secret})
+
+    if options := config.get("options", {}):
+        client_config.update({"options": options})
+
+    client: ccxt.Exchange = websocket_cls(client_config)
     client.set_sandbox_mode(sandbox)
 
     return client
-
-
-@functools.cache
-def get_mongo_client() -> MongoClient:
-    return MongoClient(MONGO_CONNECTION_URL)

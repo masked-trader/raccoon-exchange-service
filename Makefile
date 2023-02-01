@@ -13,7 +13,7 @@ clean:
 	docker network prune --force
 
 debug_service:
-	docker compose exec raccoon-order bash
+	docker compose exec raccoon-exchange bash
 
 debug_redis:
 	docker compose exec redis redis-cli

@@ -2,8 +2,8 @@ from typing import List, Optional
 
 from fastapi import APIRouter, Header
 
+from client import get_ccxt_client
 from server.models.balance import ExchangeBalance
-from util import get_exchange_client
 
 router = APIRouter()
 
@@ -24,7 +24,7 @@ async def retrieve(
 
 @router.post("/sync/")
 async def sync_balances(x_connection_id: str = Header()):
-    client = get_exchange_client(x_connection_id)
+    client = get_ccxt_client(x_connection_id)
 
     resp = client.fetch_balance()
 

@@ -3,12 +3,12 @@ from typing import List, Optional
 from fastapi import APIRouter, Header
 from fastapi.exceptions import HTTPException
 
+from client import get_ccxt_client
 from server.models.order import (
     ExchangeOrder,
     ExchangeOrderCancelRequest,
     ExchangeOrderRequest,
 )
-from util import get_exchange_client
 
 router = APIRouter()
 
@@ -33,7 +33,7 @@ async def retrieve(
 async def create(
     request: ExchangeOrderRequest, x_connection_id: str = Header()
 ) -> ExchangeOrder:
-    client = get_exchange_client(x_connection_id)
+    client = get_ccxt_client(x_connection_id)
 
     try:
         return client.create_order(
@@ -51,7 +51,7 @@ async def create(
 
 @router.post("/{symbol}/sync/")
 async def sync_orders(symbol: str, x_connection_id: str = Header()):
-    client = get_exchange_client(x_connection_id)
+    client = get_ccxt_client(x_connection_id)
 
     for item in client.fetch_orders(symbol):  # type: ignore
         order_data = {
@@ -93,7 +93,7 @@ async def sync_orders(symbol: str, x_connection_id: str = Header()):
 
 @router.post("/cancel/")
 async def cancel(request: ExchangeOrderCancelRequest, x_connection_id: str = Header()):
-    client = get_exchange_client(x_connection_id)
+    client = get_ccxt_client(x_connection_id)
 
     try:
         return client.cancel_order(
