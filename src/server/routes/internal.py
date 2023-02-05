@@ -21,6 +21,9 @@ async def sync_order_data(
     if not order:
         return await request.create()
 
+    elif request.timestamp < order.timestamp:
+        return order
+
     order.timestamp = request.timestamp
     order.datetime = request.datetime
     order.lastTradeTimestamp = request.lastTradeTimestamp

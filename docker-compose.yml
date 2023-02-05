@@ -11,14 +11,26 @@ services:
       target: development
     env_file:
       - ./.env.development
-    environment:
-      RACCOON_INTERNAL_CONFIG_API: http://raccoon-configuration:8000/internal/config
-    ports:
-      - 8001:8001
     volumes:
       - ./src/:/workspace/app/
+    networks:
+      - raccoon-proxy-network-dev
+      - raccoon-exchange-network-dev
     depends_on:
       - mongodb
+    restart: unless-stopped
+
+  raccoon-proxy:
+    container_name: raccoon-proxy-service-dev
+    image: nginx
+    ports:
+      - 80:80
+      - 5284:5284
+    volumes:
+      - ./files/nginx/conf.d:/etc/nginx/conf.d:ro
+      - ./files/nginx/snippets:/etc/nginx/snippets:ro
+    networks:
+      - raccoon-proxy-network-dev
     restart: unless-stopped
 
   raccoon-configuration:
@@ -30,11 +42,13 @@ services:
       target: development
     environment:
       RACCOON_REDIS_HOST: redis
-    ports:
-      - 8000:8000
+      RACCOON_MONGO_CONNECTION_URL: mongodb://root:rootpassword@mongodb:27017
     depends_on:
       - redis
       - mongodb
+    networks:
+      - raccoon-proxy-network-dev
+      - raccoon-config-network-dev
     restart: unless-stopped
 
   redis:
@@ -42,8 +56,8 @@ services:
     image: redislabs/redistimeseries
     restart: unless-stopped
     command: redis-server --save "" --appendonly no --loadmodule /usr/lib/redis/modules/redistimeseries.so
-    ports:
-      - 6379:6379
+    networks:
+      - raccoon-config-network-dev
     volumes:
       - redis-data-dev:/data/
 
@@ -54,8 +68,10 @@ services:
       MONGO_INITDB_DATABASE: raccoon
       MONGO_INITDB_ROOT_USERNAME: root
       MONGO_INITDB_ROOT_PASSWORD: rootpassword
-    ports:
-      - 27017:27017
+    networks:
+      - raccoon-config-network-dev
+      - raccoon-exchange-network-dev
+      - raccoon-mongo-express-network-dev
     volumes:
       - mongodb-data-dev:/data/db
       - mongodb-data-dev:/data/configdb
@@ -72,6 +88,8 @@ services:
       ME_CONFIG_BASICAUTH_PASSWORD: admin
     ports:
       - 8081:8081
+    networks:
+      - raccoon-mongo-express-network-dev
     depends_on:
       - mongodb
     restart: unless-stopped
@@ -79,3 +97,9 @@ services:
 volumes:
   redis-data-dev:
   mongodb-data-dev:
+
+networks:
+  raccoon-proxy-network-dev:
+  raccoon-config-network-dev:
+  raccoon-exchange-network-dev:
+  raccoon-mongo-express-network-dev:
