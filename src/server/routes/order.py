@@ -36,7 +36,7 @@ async def create(
     client = get_ccxt_client(x_connection_id)
 
     try:
-        return client.create_order(
+        response = client.create_order(
             symbol=request.symbol,
             type=request.type,
             side=request.side,
@@ -44,6 +44,19 @@ async def create(
             price=request.price,
             params=request.params,
         )
+
+        order_data = {
+            **response,
+            "connection": x_connection_id,
+            "orderId": response["id"],
+        }
+
+        del order_data["id"]
+
+        order_item = ExchangeOrder(**order_data)
+        await order_item.create()
+
+        return order_item
 
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
@@ -54,12 +67,7 @@ async def sync_orders(symbol: str, x_connection_id: str = Header()):
     client = get_ccxt_client(x_connection_id)
 
     for item in client.fetch_orders(symbol):  # type: ignore
-        order_data = {
-            **item,
-            "connection": x_connection_id,
-            "orderId": item["id"],
-            "symbol": symbol,
-        }
+        order_data = {**item, "connection": x_connection_id, "orderId": item["id"]}
 
         del order_data["id"]
 
