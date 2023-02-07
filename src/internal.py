@@ -2,12 +2,12 @@ import functools
 
 import requests
 
-from constants import INTERNAL_API_BASE_URL, INTERNAL_SSL_VERIFY
+from settings import settings
 
 
 @functools.cache
 def internal_retrieve_connection_config(connection_id: str) -> dict:
     return requests.get(
-        f"{INTERNAL_API_BASE_URL}/internal/config/connection/{connection_id}/",
-        verify=INTERNAL_SSL_VERIFY,
+        f"{settings.internal_api_base_url}/internal/config/connection/{connection_id}/",
+        verify=settings.internal_ssl_verify,
     ).json()

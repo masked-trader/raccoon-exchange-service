@@ -41,7 +41,7 @@ services:
       dockerfile: ./Dockerfile
       target: development
     environment:
-      RACCOON_REDIS_HOST: redis
+      RACCOON_REDIS_CONNECTION_URL: redis://redis:6379/0
       RACCOON_MONGO_CONNECTION_URL: mongodb://root:rootpassword@mongodb:27017
     depends_on:
       - redis
