@@ -3,7 +3,7 @@ from pydantic import AnyHttpUrl, BaseSettings, MongoDsn
 
 class Settings(BaseSettings):
     internal_ssl_verify: bool = False
-    internal_api_base_url: AnyHttpUrl = "localhost:5284"  # type: ignore
+    internal_api_base_url: AnyHttpUrl = "http://localhost:5284"  # type: ignore
 
     mongo_database: str = "raccoon"
     mongo_connection_url: MongoDsn = "mongodb://localhost:27017"  # type: ignore
