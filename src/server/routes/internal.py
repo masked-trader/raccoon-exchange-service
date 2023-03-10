@@ -6,7 +6,7 @@ from server.models.order import ExchangeOrder
 router = APIRouter()
 
 
-@router.post("/order/")
+@router.post("/order/sync/")
 async def sync_order_data(
     request: ExchangeOrder, x_connection_id=Header()
 ) -> ExchangeOrder:
@@ -39,7 +39,7 @@ async def sync_order_data(
     return await order.save()
 
 
-@router.post("/balance/")
+@router.post("/balance/sync/")
 async def sync_balance_data(
     request: ExchangeBalance, x_connection_id=Header()
 ) -> ExchangeBalance:
