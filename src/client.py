@@ -1,8 +1,10 @@
 import functools
 
 import ccxt
+import redis
 
 from internal import internal_retrieve_connection_config
+from settings import settings
 
 
 @functools.cache
@@ -29,3 +31,8 @@ def get_ccxt_client(connection_id: str) -> ccxt.Exchange:
     client.set_sandbox_mode(sandbox)
 
     return client
+
+
+@functools.cache
+def get_redis_client() -> redis.Redis:
+    return redis.Redis.from_url(settings.redis_connection_url)
