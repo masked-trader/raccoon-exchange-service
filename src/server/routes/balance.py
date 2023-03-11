@@ -10,7 +10,9 @@ router = APIRouter()
 
 @router.get("/")
 async def list(x_connection_id: str = Header()) -> List[ExchangeBalance]:
-    return await ExchangeBalance.find({"connection": x_connection_id}).to_list()
+    return await ExchangeBalance.find(
+        ExchangeBalance.connection == x_connection_id
+    ).to_list()
 
 
 @router.get("/{name}/")
@@ -18,7 +20,7 @@ async def retrieve(
     name: str, x_connection_id: str = Header()
 ) -> Optional[ExchangeBalance]:
     return await ExchangeBalance.find_one(
-        {"connection": x_connection_id, "asset": name}
+        ExchangeBalance.connection == x_connection_id, ExchangeBalance.asset == name
     )
 
 
@@ -30,7 +32,7 @@ async def sync_balances(x_connection_id: str = Header()):
 
     for name in resp["total"]:
         balance = await ExchangeBalance.find_one(
-            {"connection": x_connection_id, "asset": name}
+            ExchangeBalance.connection == x_connection_id, ExchangeBalance.asset == name
         )
 
         balance_data = resp[name]

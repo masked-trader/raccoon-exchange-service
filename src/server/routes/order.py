@@ -16,7 +16,7 @@ router = APIRouter()
 @router.get("/{symbol}/")
 async def list(symbol: str, x_connection_id: str = Header()) -> List[ExchangeOrder]:
     return await ExchangeOrder.find(
-        {"symbol": symbol, "connection": x_connection_id}
+        ExchangeOrder.symbol == symbol, ExchangeOrder.connection == x_connection_id
     ).to_list()
 
 
@@ -25,7 +25,9 @@ async def retrieve(
     symbol: str, order_id: str, x_connection_id: str = Header()
 ) -> Optional[ExchangeOrder]:
     return await ExchangeOrder.find_one(
-        {"symbol": symbol, "orderId": order_id, "connection": x_connection_id}
+        ExchangeOrder.symbol == symbol,
+        ExchangeOrder.orderId == order_id,
+        ExchangeOrder.connection == x_connection_id,
     )
 
 
@@ -72,11 +74,9 @@ async def sync_orders(symbol: str, x_connection_id: str = Header()):
         del order_data["id"]
 
         order = await ExchangeOrder.find_one(
-            {
-                "connection": x_connection_id,
-                "orderId": order_data["orderId"],
-                "symbol": symbol,
-            }
+            ExchangeOrder.connection == x_connection_id,
+            ExchangeOrder.orderId == order_data["orderId"],
+            ExchangeOrder.symbol == symbol,
         )
 
         if not order:
