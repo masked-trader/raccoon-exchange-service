@@ -1,7 +1,7 @@
 from enum import Enum
 from typing import Optional
 
-from beanie import Document, Insert, before_event
+from beanie import Document
 from pydantic import BaseModel
 
 
@@ -59,10 +59,6 @@ class ExchangeOrder(Document):
     reduceOnly: Optional[bool]
     clientOrderId: Optional[str]
     info: dict
-
-    @before_event(Insert)
-    def update_symbol(self):
-        self.symbol = self.symbol.replace("/", "")
 
     class Settings:
         name = "exchange-order"

@@ -33,31 +33,13 @@ services:
       - raccoon-proxy-network-dev
     restart: unless-stopped
 
-  raccoon-configuration:
-    container_name: raccoon-configuration-service-dev
-    image: masked-trader/configuration-service:dev
-    build:
-      context: github.com/masked-trader/raccoon-configuration-service.git
-      dockerfile: ./Dockerfile
-      target: development
-    environment:
-      RACCOON_REDIS_CONNECTION_URL: redis://redis:6379/0
-      RACCOON_MONGO_CONNECTION_URL: mongodb://root:rootpassword@mongodb:27017
-    depends_on:
-      - redis
-      - mongodb
-    networks:
-      - raccoon-proxy-network-dev
-      - raccoon-config-network-dev
-    restart: unless-stopped
-
   redis:
     container_name: raccoon-redis-dev
     image: redislabs/redistimeseries
     restart: unless-stopped
     command: redis-server --save "" --appendonly no --loadmodule /usr/lib/redis/modules/redistimeseries.so
     networks:
-      - raccoon-config-network-dev
+      - raccoon-exchange-network-dev
     volumes:
       - redis-data-dev:/data/
 
@@ -69,7 +51,6 @@ services:
       MONGO_INITDB_ROOT_USERNAME: root
       MONGO_INITDB_ROOT_PASSWORD: rootpassword
     networks:
-      - raccoon-config-network-dev
       - raccoon-exchange-network-dev
       - raccoon-mongo-express-network-dev
     volumes:
@@ -100,6 +81,5 @@ volumes:
 
 networks:
   raccoon-proxy-network-dev:
-  raccoon-config-network-dev:
   raccoon-exchange-network-dev:
   raccoon-mongo-express-network-dev:

@@ -1,9 +1,15 @@
 from fastapi import APIRouter, Header
 
 from server.models.balance import ExchangeBalance
+from server.models.connection import ExchangeConnection
 from server.models.order import ExchangeOrder
 
 router = APIRouter()
+
+
+@router.get("/connection/")
+async def retrieve_connection(x_connection_id=Header()) -> ExchangeConnection:
+    return await ExchangeConnection.get(x_connection_id)  # type: ignore
 
 
 @router.post("/order/sync/")
@@ -11,11 +17,9 @@ async def sync_order_data(
     request: ExchangeOrder, x_connection_id=Header()
 ) -> ExchangeOrder:
     order = await ExchangeOrder.find_one(
-        {
-            "orderId": request.orderId,
-            "symbol": request.symbol,
-            "connection": x_connection_id,
-        }
+        ExchangeOrder.orderId == request.orderId,
+        ExchangeOrder.symbol == request.symbol,
+        ExchangeOrder.connection == x_connection_id,
     )
 
     if not order:
@@ -44,10 +48,8 @@ async def sync_balance_data(
     request: ExchangeBalance, x_connection_id=Header()
 ) -> ExchangeBalance:
     balance = await ExchangeBalance.find_one(
-        {
-            "asset": request.asset,
-            "connection": x_connection_id,
-        }
+        ExchangeBalance.asset == request.asset,
+        ExchangeBalance.connection == x_connection_id,
     )
 
     if not balance:
