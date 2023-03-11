@@ -15,7 +15,7 @@ async def list() -> List[ExchangeConnectionView]:
     return await ExchangeConnection.find_all().project(ExchangeConnectionView).to_list()
 
 
-@router.get("/{id}/")
+@router.get("/{id:path}/")
 async def retrieve(id: str) -> Optional[ExchangeConnectionView]:
     return await ExchangeConnection.find_one(ExchangeConnection.id == id).project(
         ExchangeConnectionView
@@ -48,7 +48,7 @@ async def create(connection: ExchangeConnection) -> ExchangeConnection:
         )
 
 
-@router.delete("/{id}/")
+@router.delete("/{id:path}/")
 async def destroy(id: str):
     connection = await ExchangeConnection.get(id)  # type: ignore
 

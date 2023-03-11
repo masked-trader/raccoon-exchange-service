@@ -12,7 +12,7 @@ async def retrieve_connection(x_connection_id=Header()) -> ExchangeConnection:
     return await ExchangeConnection.get(x_connection_id)  # type: ignore
 
 
-@router.post("/order/sync/")
+@router.post("/order/")
 async def sync_order_data(
     request: ExchangeOrder, x_connection_id=Header()
 ) -> ExchangeOrder:
@@ -43,7 +43,7 @@ async def sync_order_data(
     return await order.save()
 
 
-@router.post("/balance/sync/")
+@router.post("/balance/")
 async def sync_balance_data(
     request: ExchangeBalance, x_connection_id=Header()
 ) -> ExchangeBalance:

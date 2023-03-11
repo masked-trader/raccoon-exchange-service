@@ -5,6 +5,8 @@ from beanie import Delete, Document, Insert, after_event
 from pydantic import BaseModel, Field
 
 from client import get_redis_client
+from server.routes.balance import sync_balances
+from server.routes.market import sync_markets
 
 REDIS_CONNECTION_CONFIG_KEY = "connection-config"
 
@@ -24,6 +26,14 @@ class ExchangeConnection(Document):
     secret: str
     sandbox: Optional[bool] = False
     options: Optional[dict] = {}
+
+    @after_event(Insert)
+    async def sync_account_balances(self):
+        await sync_balances(x_connection_id=self.id)
+
+    @after_event(Insert)
+    async def sync_client_markets(self):
+        await sync_markets(x_connection_id=self.id)
 
     @after_event(Insert)
     def insert_redis_connection_config(self):

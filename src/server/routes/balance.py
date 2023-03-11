@@ -15,17 +15,17 @@ async def list(x_connection_id: str = Header()) -> List[ExchangeBalance]:
     ).to_list()
 
 
-@router.get("/{name}/")
+@router.get("/{asset:path}/")
 async def retrieve(
-    name: str, x_connection_id: str = Header()
+    asset: str, x_connection_id: str = Header()
 ) -> Optional[ExchangeBalance]:
     return await ExchangeBalance.find_one(
-        ExchangeBalance.connection == x_connection_id, ExchangeBalance.asset == name
+        ExchangeBalance.connection == x_connection_id, ExchangeBalance.asset == asset
     )
 
 
 @router.post("/sync/")
-async def sync_balances(x_connection_id: str = Header()):
+async def sync_balances(x_connection_id: str = Header()) -> List[ExchangeBalance]:
     client = get_ccxt_client(x_connection_id)
 
     resp = client.fetch_balance()
@@ -50,3 +50,7 @@ async def sync_balances(x_connection_id: str = Header()):
             balance.total = balance_data["total"]
 
             await balance.save()
+
+    return await ExchangeBalance.find(
+        ExchangeBalance.connection == x_connection_id
+    ).to_list()

@@ -3,8 +3,11 @@ from typing import List, Optional
 from fastapi import APIRouter, Header
 from fastapi.exceptions import HTTPException
 
-from client import get_ccxt_client
-from server.models.subscription import ExchangeSubscription, ExchangeSubscriptionType
+from server.models.subscription import (
+    ExchangeKlineSubscriptionRequest,
+    ExchangeSubscription,
+    ExchangeSubscriptionType,
+)
 
 router = APIRouter()
 
@@ -17,70 +20,84 @@ async def list(x_connection_id: str = Header()) -> List[ExchangeSubscription]:
     ).to_list()
 
 
-@router.get("/{symbol}/")
-async def list_symbol(
-    symbol: str,
-    x_connection_id: str = Header(),
-) -> List[ExchangeSubscription]:
-    return await ExchangeSubscription.find(
-        ExchangeSubscription.type == ExchangeSubscriptionType.KLINE,
-        ExchangeSubscription.symbol == symbol,
-        ExchangeSubscription.connection == x_connection_id,
-    ).to_list()
-
-
-@router.get("/{symbol}/{interval}/")
+@router.get("/{symbol:path}/interval/{interval:path}/")
 async def retrieve(
     symbol: str,
     interval: str,
     x_connection_id: str = Header(),
 ) -> Optional[ExchangeSubscription]:
-    return await ExchangeSubscription.find_one(
-        ExchangeSubscription.type == ExchangeSubscriptionType.KLINE,
-        ExchangeSubscription.symbol == symbol,
-        ExchangeSubscription.interval == interval,
-        ExchangeSubscription.connection == x_connection_id,
-    )
+    try:
+        return await ExchangeSubscription.find_one(
+            ExchangeSubscription.type == ExchangeSubscriptionType.KLINE,
+            ExchangeSubscription.symbol == symbol,
+            ExchangeSubscription.interval == interval,
+            ExchangeSubscription.connection == x_connection_id,
+        )
+
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.get("/{symbol:path}/")
+async def list_symbol(
+    symbol: str,
+    x_connection_id: str = Header(),
+) -> List[ExchangeSubscription]:
+    try:
+        return await ExchangeSubscription.find(
+            ExchangeSubscription.type == ExchangeSubscriptionType.KLINE,
+            ExchangeSubscription.symbol == symbol,
+            ExchangeSubscription.connection == x_connection_id,
+        ).to_list()
+
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
 
 @router.post("/")
 async def create(
-    subscription: ExchangeSubscription, x_connection_id: str = Header()
+    request: ExchangeKlineSubscriptionRequest, x_connection_id: str = Header()
 ) -> ExchangeSubscription:
-    existing_subscription = await ExchangeSubscription.find_one(
-        ExchangeSubscription.type == ExchangeSubscriptionType.KLINE,
-        ExchangeSubscription.symbol == subscription.symbol,
-        ExchangeSubscription.interval == subscription.interval,
-        ExchangeSubscription.connection == x_connection_id,
-    )
+    try:
+        existing_subscription = await ExchangeSubscription.find_one(
+            ExchangeSubscription.type == ExchangeSubscriptionType.KLINE,
+            ExchangeSubscription.symbol == request.symbol,
+            ExchangeSubscription.interval == request.interval,
+            ExchangeSubscription.connection == x_connection_id,
+        )
 
-    if existing_subscription:
-        return existing_subscription
+        if existing_subscription:
+            return existing_subscription
 
-    client = get_ccxt_client(x_connection_id)
+        subscription = ExchangeSubscription(
+            type=ExchangeSubscriptionType.KLINE,
+            interval=request.interval,
+            connection=x_connection_id,
+            symbol=request.symbol,
+        )
 
-    markets = client.load_markets()
-    market_info = markets[subscription.symbol]
+        return await subscription.create()
 
-    if subscription.interval not in market_info["timeframes"]:
-        raise HTTPException(status_code=400, detail="invalid value for interval")
-
-    subscription.type = ExchangeSubscriptionType.KLINE
-    subscription.connection = x_connection_id
-
-    return await subscription.create()
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
 
 @router.delete("/")
-async def destroy(subscription: ExchangeSubscription, x_connection_id: str = Header()):
-    item = await ExchangeSubscription.find_one(
-        ExchangeSubscription.type == ExchangeSubscriptionType.KLINE,
-        ExchangeSubscription.symbol == subscription.symbol,
-        ExchangeSubscription.interval == subscription.interval,
-        ExchangeSubscription.connection == x_connection_id,
-    )
+async def destroy(
+    request: ExchangeKlineSubscriptionRequest, x_connection_id: str = Header()
+):
+    try:
+        item = await ExchangeSubscription.find_one(
+            ExchangeSubscription.type == ExchangeSubscriptionType.KLINE,
+            ExchangeSubscription.interval == request.interval,
+            ExchangeSubscription.connection == x_connection_id,
+            ExchangeSubscription.symbol == request.symbol,
+        )
 
-    if not item:
-        raise HTTPException(status_code=400, detail="subscription not found")
+        if not item:
+            raise HTTPException(status_code=400, detail="subscription not found")
 
-    await ExchangeSubscription.delete(item)
+        await ExchangeSubscription.delete(item)
+
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))

@@ -13,14 +13,7 @@ from server.models.order import (
 router = APIRouter()
 
 
-@router.get("/{symbol}/")
-async def list(symbol: str, x_connection_id: str = Header()) -> List[ExchangeOrder]:
-    return await ExchangeOrder.find(
-        ExchangeOrder.symbol == symbol, ExchangeOrder.connection == x_connection_id
-    ).to_list()
-
-
-@router.get("/{symbol}/{order_id}/")
+@router.get("/{symbol:path}/orderId/{order_id:path}/")
 async def retrieve(
     symbol: str, order_id: str, x_connection_id: str = Header()
 ) -> Optional[ExchangeOrder]:
@@ -31,11 +24,24 @@ async def retrieve(
     )
 
 
+@router.get("/{symbol:path}/")
+async def list(symbol: str, x_connection_id: str = Header()) -> List[ExchangeOrder]:
+    return await ExchangeOrder.find(
+        ExchangeOrder.symbol == symbol, ExchangeOrder.connection == x_connection_id
+    ).to_list()
+
+
 @router.post("/")
 async def create(
     request: ExchangeOrderRequest, x_connection_id: str = Header()
 ) -> ExchangeOrder:
     client = get_ccxt_client(x_connection_id)
+
+    if request.symbol not in client.load_markets():
+        raise HTTPException(
+            status_code=400,
+            detail=f"invalid symbol {request.symbol} for connection configuration",
+        )
 
     try:
         response = client.create_order(
@@ -64,7 +70,7 @@ async def create(
         raise HTTPException(status_code=400, detail=str(e))
 
 
-@router.post("/{symbol}/sync/")
+@router.post("/{symbol:path}/sync/")
 async def sync_orders(symbol: str, x_connection_id: str = Header()):
     client = get_ccxt_client(x_connection_id)
 
@@ -99,7 +105,7 @@ async def sync_orders(symbol: str, x_connection_id: str = Header()):
             await order.save()
 
 
-@router.post("/cancel/")
+@router.delete("/")
 async def cancel(request: ExchangeOrderCancelRequest, x_connection_id: str = Header()):
     client = get_ccxt_client(x_connection_id)
 
