@@ -1,7 +1,18 @@
 {
-	"build": {
-		"dockerfile": "./Dockerfile"
-	},
+    "image": "mcr.microsoft.com/devcontainers/base:jammy",
+    "features": {
+        "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {
+            "version": "latest",
+            "enableNonRootDocker": "true",
+            "moby": "true"
+        },
+        "ghcr.io/devcontainers/features/python:1": {
+            "version": "3.11"
+        },
+        "ghcr.io/devcontainers-contrib/features/poetry:2": {
+            "version": "latest"
+        }
+    },
     "customizations": {
         "vscode": {
             "settings": {
@@ -27,14 +38,8 @@
             ]
         }
     },
-    "features": {
-        "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {
-            "version": "latest",
-            "enableNonRootDocker": "true",
-            "moby": "true"
-        }
-    },
-    "remoteEnv": {
-        "LOCAL_WORKSPACE_FOLDER": "${localWorkspaceFolder}"
-    }
+    "mounts": [
+        "type=bind,source=${localWorkspaceFolder},target=/workspace",
+        "type=bind,source=/home/${localEnv:USER}/.ssh,target=/root/.ssh,readonly"
+    ]
 }
