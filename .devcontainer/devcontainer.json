@@ -17,29 +17,27 @@
         "vscode": {
             "settings": {
                 "editor.formatOnSave": true,
+                "editor.defaultFormatter": "ms-python.black-formatter",
                 "editor.codeActionsOnSave": {
                     "source.organizeImports": true
                 },
                 "files.associations": {
                     ".env.*": "properties"
                 },
+                "flake8.args": ["--ignore=E501,W503"],
                 "python.defaultInterpreterPath": "./.venv/bin/python",
-                "python.analysis.typeCheckingMode": "basic",
-                "python.formatting.provider": "black",
-                "python.linting.enabled": true,
-                "python.linting.flake8Enabled": true,
-                "python.linting.flake8Args": [
-                    "--ignore=E501,W503"
-                ]
+                "python.analysis.typeCheckingMode": "basic"
             },
             "extensions": [
                 "ms-python.python",
-                "ms-python.vscode-pylance"
+                "ms-python.vscode-pylance",
+                "ms-python.black-formatter",
+                "ms-python.flake8"
             ]
         }
     },
     "mounts": [
         "type=bind,source=${localWorkspaceFolder},target=/workspace",
-        "type=bind,source=/home/${localEnv:USER}/.ssh,target=/root/.ssh,readonly"
+        "type=bind,source=/home/${localEnv:USER}/.ssh,target=/home/vscode/.ssh,readonly"
     ]
 }
