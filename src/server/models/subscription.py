@@ -50,9 +50,12 @@ class ExchangeSubscription(Document):
 
     @after_event(Insert)
     async def insert_subscription(self):
-        connection = await ExchangeConnection.get(self.connection)  # type: ignore
+        connection = await ExchangeConnection.get(self.connection)
 
-        redis_key = get_redis_subscription_key(connection, self.type)  # type: ignore
+        if not connection:
+            raise ValueError(f"connection not found {connection}")
+
+        redis_key = get_redis_subscription_key(connection, self.type)
         redis_value: str = get_redis_subscription_value(self)
 
         redis = get_redis_client()
@@ -60,9 +63,12 @@ class ExchangeSubscription(Document):
 
     @after_event(Delete)
     async def delete_subscription(self):
-        connection = await ExchangeConnection.get(self.connection)  # type: ignore
+        connection = await ExchangeConnection.get(self.connection)
 
-        redis_key = get_redis_subscription_key(connection, self.type)  # type: ignore
+        if not connection:
+            raise ValueError(f"connection not found {connection}")
+
+        redis_key = get_redis_subscription_key(connection, self.type)
         redis_value: str = get_redis_subscription_value(self)
 
         redis = get_redis_client()
@@ -95,7 +101,7 @@ def get_redis_subscription_value(subscription: ExchangeSubscription):
         return market["id"]
 
     elif subscription.type == ExchangeSubscriptionType.KLINE:
-        return "-".join([market["id"], subscription.interval])  # type: ignore
+        return "-".join([market["id"], getattr(subscription, 'interval')])
 
     raise ValueError(f"invalid subscription type - {subscription.type.value}")
 

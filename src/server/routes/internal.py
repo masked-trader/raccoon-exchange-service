@@ -8,8 +8,8 @@ router = APIRouter()
 
 
 @router.get("/connection/")
-async def retrieve_connection(x_connection_id=Header()) -> ExchangeConnection:
-    return await ExchangeConnection.get(x_connection_id)  # type: ignore
+async def retrieve_connection(x_connection_id=Header()) -> ExchangeConnection | None:
+    return await ExchangeConnection.get(x_connection_id)
 
 
 @router.post("/order/")

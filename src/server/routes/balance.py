@@ -30,7 +30,7 @@ async def sync_balances(x_connection_id: str = Header()) -> List[ExchangeBalance
 
     resp = client.fetch_balance()
 
-    for name in resp["total"]:
+    for name in resp["total"]:  # type: ignore
         balance = await ExchangeBalance.find_one(
             ExchangeBalance.connection == x_connection_id, ExchangeBalance.asset == name
         )

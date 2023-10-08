@@ -50,7 +50,7 @@ async def create(connection: ExchangeConnection) -> ExchangeConnection:
 
 @router.delete("/{id:path}/")
 async def destroy(id: str):
-    connection = await ExchangeConnection.get(id)  # type: ignore
+    connection = await ExchangeConnection.get(id)
 
     if not connection:
         raise HTTPException(status_code=400, detail="connection ID not found")
