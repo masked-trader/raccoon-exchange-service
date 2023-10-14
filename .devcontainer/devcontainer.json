@@ -1,4 +1,5 @@
 {
+    "name": "raccoon-exchange-service-devcontainer",
     "image": "mcr.microsoft.com/devcontainers/base:jammy",
     "features": {
         "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {
@@ -16,16 +17,17 @@
     "customizations": {
         "vscode": {
             "settings": {
-                "editor.formatOnSave": true,
-                "editor.defaultFormatter": "ms-python.black-formatter",
-                "editor.codeActionsOnSave": {
-                    "source.organizeImports": true
+                "[python]": {
+                    "editor.formatOnSave": true,
+                    "editor.defaultFormatter": "ms-python.black-formatter",
+                    "editor.codeActionsOnSave": {
+                        "source.organizeImports": true
+                    }
                 },
                 "files.associations": {
                     ".env.*": "properties"
                 },
                 "flake8.args": ["--ignore=E501,W503"],
-                "python.defaultInterpreterPath": "./.venv/bin/python",
                 "python.analysis.typeCheckingMode": "basic"
             },
             "extensions": [
@@ -38,6 +40,6 @@
     },
     "mounts": [
         "type=bind,source=${localWorkspaceFolder},target=/workspace",
-        "type=bind,source=/home/${localEnv:USER}/.ssh,target=/home/vscode/.ssh,readonly"
+        "type=bind,source=${localEnv:HOME}/.ssh,target=/home/vscode/.ssh,readonly"
     ]
 }

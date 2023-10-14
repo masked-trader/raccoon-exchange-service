@@ -19,7 +19,7 @@ debug_redis:
 	docker compose exec redis redis-cli
 
 test:
-	poetry run python3 -m py.test tests/
+	poetry run py.test tests/
 
 venv: venv_clean
 	poetry config virtualenvs.in-project true
